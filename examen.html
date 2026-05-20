@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen - Física CBIT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="css/examen.css">
+</head>
+<body>
+    <!-- EXAMEN PRINCIPAL -->
+    <div id="examenPanel">
+        <header class="header-examen">
+            <div class="logo-placeholder">⚛️</div>
+            <div class="titulos-header">
+                <h1>Proyecto CBIT - U.E.N Carlos Manuel Arrieta</h1>
+                <h3>Física Interactiva</h3>
+                <p id="examen-titulo">Cargando examen...</p>
+            </div>
+            <div class="logo-placeholder">CBIT</div>
+        </header>
+
+        <div class="contenido-flex">
+            <!-- menú izquierdo -->
+            <nav class="menu-preguntas" id="menuPreguntas"></nav>
+
+            <!-- zona activa -->
+            <main class="zona-pregunta" id="zonaPregunta"></main>
+        </div>
+
+        <footer class="footer-examen">
+            <span>© Proyecto CBIT - U.E.N Carlos Manuel Arrieta | Física Interactiva</span>
+            <span>
+                <a href="/" title="Volver al inicio"><i class="fas fa-home"></i></a>
+            </span>
+        </footer>
+    </div>
+
+    <!-- MODAL RESULTADOS -->
+    <div id="modalResultados" class="modal hidden">
+        <div class="modal-card">
+            <h2 id="titulo-resultado">🎉 ¡Examen Completado!</h2>
+            <div id="stats-resultado"></div>
+            <div class="modal-botones">
+                <button class="btn-modal" onclick="descargarPDF()">📄 Descargar PDF</button>
+                <a href="/" class="btn-modal btn-primario">← Volver a temas</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/examen.js"></script>
+</body>
+</html>

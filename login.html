@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Física CBIT</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Lado izquierdo: Formulario -->
+        <div class="login-form">
+            <div class="logo">
+                <span class="logo-text">Física CBIT</span>
+            </div>
+            
+            <h1>Bienvenido de nuevo</h1>
+            <p class="subtitle">Ingresa tus datos para continuar</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox">
+                        <input type="checkbox" name="remember">
+                        <span>Recordarme por 30 días</span>
+                    </label>
+                    <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+                </div>
+                
+                <button type="submit" class="btn-login">Iniciar sesión</button>
+                
+                <button type="button" class="btn-google">
+                    <img src="https://www.google.com/favicon.ico" alt="Google">
+                    Iniciar sesión con Google
+                </button>
+                
+                <p class="register-text">
+                    ¿No tienes cuenta? <a href="#" id="show-register">Regístrate</a>
+                </p>
+            </form>
+            
+            <!-- Formulario de registro (oculto al inicio) -->
+            <form id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label for="reg-name">Nombre completo</label>
+                    <input type="text" id="reg-name" name="nombre" placeholder="Tu nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reg-email">Correo electrónico</label>
+                    <input type="email" id="reg-email" name="email" placeholder="tu@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reg-password">Contraseña</label>
+                    <input type="password" id="reg-password" name="password" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                
+                <button type="submit" class="btn-login">Crear cuenta</button>
+                
+                <p class="register-text">
+                    ¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión</a>
+                </p>
+            </form>
+        </div>
+        
+        <!-- Lado derecho: Fórmulas de física -->
+        <div class="login-physics">
+            <div class="physics-content">
+                <div class="formula formula-1">E = mc²</div>
+                <div class="formula formula-2">F = ma</div>
+                <div class="formula formula-3">a = Δv/Δt</div>
+                <div class="formula formula-4">v = d/t</div>
+                <div class="formula formula-5">p = mv</div>
+                
+                <div class="physics-illustration">
+                    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Átomo -->
+                        <circle cx="200" cy="150" r="8" fill="#fff" opacity="0.9"/>
+                        <ellipse cx="200" cy="150" rx="80" ry="30" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.4" transform="rotate(0 200 150)"/>
+                        <ellipse cx="200" cy="150" rx="80" ry="30" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.4" transform="rotate(60 200 150)"/>
+                        <ellipse cx="200" cy="150" rx="80" ry="30" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.4" transform="rotate(120 200 150)"/>
+                        
+                        <!-- Electrones -->
+                        <circle cx="280" cy="150" r="4" fill="#fff" opacity="0.8">
+                            <animateTransform attributeName="transform" type="rotate" from="0 200 150" to="360 200 150" dur="4s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="160" cy="90" r="4" fill="#fff" opacity="0.8">
+                            <animateTransform attributeName="transform" type="rotate" from="120 200 150" to="480 200 150" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="240" cy="210" r="4" fill="#fff" opacity="0.8">
+                            <animateTransform attributeName="transform" type="rotate" from="240 200 150" to="600 200 150" dur="5s" repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- Líneas decorativas -->
+                        <line x1="50" y1="50" x2="100" y2="80" stroke="#fff" stroke-width="1" opacity="0.3"/>
+                        <line x1="350" y1="250" x2="300" y2="220" stroke="#fff" stroke-width="1" opacity="0.3"/>
+                        <circle cx="50" cy="50" r="3" fill="#fff" opacity="0.5"/>
+                        <circle cx="350" cy="250" r="3" fill="#fff" opacity="0.5"/>
+                    </svg>
+                </div>
+                
+                <div class="physics-quote">
+                    "La física no es difícil,<br>solo necesita práctica"
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/login.js"></script>
+</body>
+</html>

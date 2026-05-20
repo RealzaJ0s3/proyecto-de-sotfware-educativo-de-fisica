@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards - Física CBIT</title>
+    <link rel="stylesheet" href="css/flashcards.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/" class="nav-back">← Volver</a>
+            <span class="nav-icon">⚛️</span>
+            <span class="nav-title">Física CBIT</span>
+        </div>
+        <div class="nav-info" id="nav-info">
+            <span class="progreso-tag">Cargando...</span>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="flashcards-container">
+        <!-- Panel de progreso -->
+        <div class="progreso-panel" id="progreso-panel">
+            <div class="progreso-barra">
+                <div class="progreso-fill" id="progreso-fill" style="width: 0%"></div>
+            </div>
+            <span class="progreso-texto" id="progreso-texto">0% completado</span>
+        </div>
+
+        <!-- Tarjeta principal -->
+        <div class="tarjeta-wrapper" id="tarjeta-wrapper">
+            <div class="tarjeta" id="tarjeta">
+                <div class="tarjeta-frente" id="tarjeta-frente">
+                    <div class="tarjeta-numero" id="tarjeta-numero">1 / 10</div>
+                    <div class="tarjeta-pregunta" id="tarjeta-pregunta">Cargando...</div>
+                    <button class="btn-girar" onclick="girarTarjeta()">🔄 Girar tarjeta</button>
+                </div>
+                <div class="tarjeta-reverso" id="tarjeta-reverso">
+                    <div class="tarjeta-respuesta" id="tarjeta-respuesta">Respuesta</div>
+                    <p class="tarjeta-hint">¿La sabías?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de evaluación -->
+        <div class="evaluacion-botones" id="evaluacion-botones">
+            <button class="btn-repasar" onclick="evaluarFlashcard(false)">
+                ❌ Repasar después
+            </button>
+            <button class="btn-sabe" onclick="evaluarFlashcard(true)">
+                ✅ La sé
+            </button>
+        </div>
+
+        <!-- Botones de navegación -->
+        <div class="navegacion-botones">
+            <button class="btn-nav" onclick="anteriorFlashcard()" id="btn-anterior">◀ Anterior</button>
+            <button class="btn-nav" onclick="siguienteFlashcard()" id="btn-siguiente">Siguiente ▶</button>
+        </div>
+
+        <!-- Botón crear flashcard -->
+        <div class="crear-section">
+            <button class="btn-crear" onclick="mostrarFormularioCrear()">
+                ➕ Crear nueva flashcard
+            </button>
+        </div>
+
+        <!-- Formulario para crear (oculto) -->
+        <div class="formulario-crear hidden" id="formulario-crear">
+            <h3>Crear flashcard</h3>
+            <input type="text" id="nueva-pregunta" placeholder="Escribe la pregunta...">
+            <textarea id="nueva-respuesta" placeholder="Escribe la respuesta..." rows="3"></textarea>
+            <div class="form-botones">
+                <button class="btn-cancelar" onclick="ocultarFormularioCrear()">Cancelar</button>
+                <button class="btn-guardar" onclick="crearFlashcard()">Guardar</button>
+            </div>
+            <div id="mensaje-validacion" class="mensaje-error"></div>
+        </div>
+    </div>
+
+    <!-- Modal de completado -->
+    <div class="modal hidden" id="modal-completado">
+        <div class="modal-card">
+            <h2>🎉 ¡Felicitaciones!</h2>
+            <p>Has estudiado todas las flashcards de este tema.</p>
+            <div class="modal-stats" id="modal-stats"></div>
+            <div class="modal-botones">
+                <a href="/" class="btn-modal">← Volver a temas</a>
+                <button class="btn-modal" onclick="cerrarModal()" style="background: #f1f5f9; color: #475569;">
+                    🔄 Seguir estudiando
+                </button>
+                <button class="btn-modal btn-primario" onclick="irAExamen()" id="btn-examen">
+                    📝 Hacer examen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/flashcards.js"></script>
+</body>
+</html>

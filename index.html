@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Física CBIT - Temas</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="nav-icon">⚛️</span>
+            <span class="nav-title">Física CBIT</span>
+        </div>
+        <div class="nav-user" id="nav-user">
+            <a href="/login.html" class="nav-link">Iniciar sesión</a>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="main-container">
+        <!-- Sidebar izquierda: Temas -->
+        <aside class="sidebar">
+            <h2 class="sidebar-title">📚 Temas</h2>
+            <ul class="tema-list" id="tema-list">
+                <li class="loading">Cargando temas...</li>
+            </ul>
+        </aside>
+
+        <!-- Panel derecha: Subtemas -->
+        <main class="content-panel">
+            <div class="panel-header">
+                <h1 id="panel-title">Selecciona un tema</h1>
+                <p id="panel-subtitle">Haz clic en un tema de la izquierda para ver sus contenidos</p>
+            </div>
+            <div class="subtemas-grid" id="subtemas-grid">
+                <div class="empty-state">
+                    <span class="empty-icon">👈</span>
+                    <p>Selecciona un tema del menú para comenzar</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/index.js"></script>
+</body>
+</html>
