@@ -1,0 +1,344 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.7;
+}
+
+/* ========== NAVBAR ========== */
+.navbar {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+    color: white;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-back {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.nav-back:hover {
+    background: rgba(255,255,255,0.15);
+    color: white;
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+}
+
+.nav-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* ========== CONTENIDO ========== */
+.contenido-container {
+    max-width: 900px;
+    margin: 80px auto 40px;
+    padding: 0 24px;
+}
+
+.tema-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid #e2e8f0;
+}
+
+.tema-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.tema-header h1 {
+    font-size: 2.2rem;
+    color: #0f172a;
+    font-weight: 800;
+}
+
+/* ========== SECCIONES DE TEORÍA ========== */
+.teoria-seccion {
+    background: white;
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.teoria-seccion h2 {
+    color: #065f46;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.teoria-seccion h3 {
+    color: #047857;
+    font-size: 1.2rem;
+    margin: 20px 0 12px;
+}
+
+.teoria-seccion p {
+    margin-bottom: 14px;
+    color: #334155;
+    font-size: 1.05rem;
+}
+
+.teoria-seccion ul, .teoria-seccion ol {
+    margin: 12px 0 12px 28px;
+}
+
+.teoria-seccion li {
+    margin-bottom: 8px;
+    color: #475569;
+}
+
+/* ========== CAJA DE FÓRMULAS ========== */
+.formula-box {
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    border: 2px solid #86efac;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+}
+
+.formula-box ol {
+    margin-left: 24px;
+}
+
+.formula-box li {
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+/* ========== GRID DE RAMAS ========== */
+.ramas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.rama-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.rama-card:hover {
+    border-color: #22c55e;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+.rama-card h4 {
+    color: #065f46;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.rama-card p {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* ========== EJEMPLO BOX ========== */
+.ejemplo-box {
+    background: linear-gradient(135deg, #fef3c7, #fffbeb);
+    border: 2px solid #fbbf24;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0;
+}
+
+.ejemplo-box h3 {
+    color: #b45309;
+    margin-bottom: 12px;
+}
+
+.ejemplo-box p {
+    margin-bottom: 12px;
+}
+
+.formula {
+    background: #1e293b;
+    color: #86efac;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.3rem;
+    text-align: center;
+    margin: 16px 0;
+    letter-spacing: 1px;
+}
+
+/* ========== BOTÓN MARCAR LEÍDO ========== */
+.contenido-actions {
+    text-align: center;
+    margin: 40px 0;
+    padding: 32px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.btn-marcar {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-marcar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+.btn-marcar:disabled {
+    background: #86efac;
+    cursor: default;
+    transform: none;
+}
+
+.mensaje-leido {
+    color: #16a34a;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* ========== LOADING ========== */
+.loading-spinner {
+    text-align: center;
+    padding: 60px;
+    font-size: 1.2rem;
+    color: #9ca3af;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .contenido-container {
+        margin-top: 70px;
+        padding: 0 16px;
+    }
+    
+    .teoria-seccion {
+        padding: 20px;
+    }
+    
+    .tema-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .ramas-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* ========== MENSAJE COMPLETADO CON OPCIONES ========== */
+.mensaje-completado {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    border-radius: 16px;
+    border: 2px solid #86efac;
+}
+
+.completado-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.mensaje-completado h3 {
+    color: #065f46;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.mensaje-completado p {
+    color: #4b5563;
+    margin-bottom: 24px;
+    font-size: 1.05rem;
+}
+
+.completado-botones {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-flashcards {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.btn-flashcards:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+.btn-volver {
+    background: white;
+    color: #4b5563;
+    padding: 14px 28px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-volver:hover {
+    background: #f8fafc;
+    border-color: #cbd5e0;
+}
