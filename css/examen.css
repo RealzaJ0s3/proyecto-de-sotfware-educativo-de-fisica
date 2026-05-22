@@ -1,0 +1,442 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+}
+
+body {
+    background: #064e3b;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* panel examen */
+#examenPanel {
+    display: none;
+    width: 100%;
+    max-width: 1450px;
+    background: #ecfdf5;
+    border-radius: 40px;
+    overflow: hidden;
+    border: 4px solid #22c55e;
+    box-shadow: 0 0 40px #22c55ecc;
+}
+
+/* HEADER con logos */
+.header-examen {
+    background: #065f46;
+    color: #d1fae5;
+    padding: 20px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 4px solid #22c55e;
+}
+
+.logo-placeholder {
+    width: 90px;
+    height: 90px;
+    background: #047857;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #ecfdf5;
+    border: 3px dashed #86efac;
+    text-align: center;
+    font-weight: bold;
+}
+
+.titulos-header {
+    text-align: center;
+}
+
+.titulos-header h1 {
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+    color: #d1fae5;
+}
+
+.titulos-header h3 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #a7f3d0;
+}
+
+.titulos-header p {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin-top: 8px;
+    text-shadow: 2px 2px 0 #064e3b;
+}
+
+/* contenido flexible */
+.contenido-flex {
+    display: flex;
+    background: #ecfdf5;
+    min-height: 550px;
+}
+
+/* menú izquierdo */
+.menu-preguntas {
+    width: 200px;
+    background: #065f46;
+    padding: 25px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-right: 4px solid #22c55e;
+}
+
+.btn-pregunta {
+    background: #047857;
+    border: 2px solid #6ee7b7;
+    color: #ddd;
+    font-weight: bold;
+    padding: 16px 0;
+    border-radius: 60px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.15s;
+    box-shadow: inset 0 -3px 0 #064e3b;
+    text-align: center;
+}
+
+.btn-pregunta.respondida {
+    background: #22c55e;
+    border-color: #ffffff;
+    color: #064e3b;
+    box-shadow: 0 0 20px #86efac;
+}
+
+.btn-pregunta.actual {
+    background: #86efac;
+    border-color: white;
+    color: #064e3b;
+    font-weight: 900;
+    box-shadow: 0 0 20px #bbf7d0;
+}
+
+/* zona pregunta */
+.zona-pregunta {
+    flex: 1;
+    padding: 35px 40px 30px 40px;
+    background: #f0fdf4;
+    color: #064e3b;
+}
+
+.pregunta-contenedor {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.pregunta-texto {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    border-left: 15px solid #16a34a;
+    padding-left: 25px;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.opciones-area {
+    background: #dcfce7;
+    padding: 30px 35px;
+    border-radius: 50px;
+    box-shadow: inset 0 0 0 3px #86efac;
+    border: 2px solid #4ade80;
+}
+
+.opcion-item {
+    margin: 22px 0;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    font-size: 1.4rem;
+}
+
+.opcion-item input[type="radio"] {
+    transform: scale(1.6);
+    accent-color: #16a34a;
+    margin-right: 5px;
+}
+
+.badge-codigo {
+    background: #065f46;
+    color: #d1fae5;
+    padding: 20px;
+    border-radius: 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.3rem;
+    margin: 20px 0 25px;
+    border: 3px solid #86efac;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+}
+
+/* botón siguiente y finalizar */
+.btn-siguiente, .btn-finalizar-pregunta {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 14px 45px;
+    border-radius: 60px;
+    font-weight: bold;
+    font-size: 1.3rem;
+    cursor: pointer;
+    border: 3px solid #86efac;
+    margin-top: 30px;
+    display: inline-block;
+    box-shadow: 0 5px 0 #064e3b;
+    transition: 0.1s;
+    margin-right: 15px;
+}
+
+.btn-siguiente:hover, .btn-finalizar-pregunta:hover { 
+    background: #15803d; 
+    transform: translateY(2px); 
+    box-shadow: 0 3px 0 #064e3b; 
+}
+
+.btn-siguiente:disabled { opacity: 0.5; pointer-events: none; }
+
+.btn-finalizar-pregunta {
+    background: #059669;
+    border: 3px solid #6ee7b7;
+}
+
+/* footer */
+.footer-examen {
+    background: #064e3b;
+    color: #a7f3d0;
+    padding: 18px 30px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 4px solid #22c55e;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.footer-examen a {
+    color: #a7f3d0;
+    text-decoration: none;
+    font-size: 2rem;
+    margin-left: 20px;
+    vertical-align: middle;
+}
+
+.footer-examen a:hover {
+    color: white;
+}
+
+/* MODAL RESULTADOS */
+.modal {
+    display: flex;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(6, 78, 59, 0.95);
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-card {
+    background: #f0fdf4;
+    padding: 2.5rem 2.8rem;
+    border-radius: 40px;
+    box-shadow: 0 20px 30px rgba(34, 197, 94, 0.6);
+    max-width: 500px;
+    width: 90%;
+    border: 4px solid #22c55e;
+    text-align: center;
+}
+
+.modal-card h2 {
+    color: #065f46;
+    margin-bottom: 25px;
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 20px;
+    margin: 8px 0;
+    background: #dcfce7;
+    border-radius: 12px;
+    font-size: 1.1rem;
+}
+
+.stat-label {
+    color: #374151;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-weight: 700;
+    color: #065f46;
+}
+
+.stat-value.aprobado {
+    color: #16a34a;
+}
+
+.stat-value.reprobado {
+    color: #dc2626;
+}
+
+.resultado-mensaje {
+    margin: 20px 0;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+}
+
+.resultado-mensaje.aprobado {
+    background: #dcfce7;
+    color: #065f46;
+}
+
+.resultado-mensaje.reprobado {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.modal-botones {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+
+.btn-modal {
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-modal:not(.btn-primario) {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.btn-modal:not(.btn-primario):hover {
+    background: #e2e8f0;
+}
+
+.btn-primario {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: white;
+}
+
+.btn-primario:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.hidden { display: none !important; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .contenido-flex {
+        flex-direction: column;
+    }
+    
+    .menu-preguntas {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 15px;
+    }
+    
+    .btn-pregunta {
+        flex: 1;
+        min-width: 80px;
+    }
+    
+    .pregunta-texto {
+        font-size: 1.4rem;
+    }
+    
+    .opcion-item {
+        font-size: 1.1rem;
+    }
+}
+/* ========== NAVEGACIÓN EXAMEN ========== */
+.navegacion-examen {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-nav-examen {
+    padding: 12px 28px;
+    border-radius: 60px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 3px solid #86efac;
+    transition: all 0.2s;
+}
+
+.btn-anterior {
+    background: #047857;
+    color: white;
+}
+
+.btn-anterior:hover:not(:disabled) {
+    background: #065f46;
+}
+
+.btn-anterior:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-siguiente {
+    background: #16a34a;
+    color: white;
+}
+
+.btn-siguiente:hover {
+    background: #15803d;
+}
+
+.btn-finalizar {
+    background: #059669;
+    color: white;
+}
+
+.btn-finalizar:hover {
+    background: #047857;
+}
+
+/* ========== NÚMERO PREGUNTA ========== */
+.numero-pregunta {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
