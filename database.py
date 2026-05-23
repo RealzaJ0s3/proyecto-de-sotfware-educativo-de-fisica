@@ -2,6 +2,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
+import traceback
 
 load_dotenv()
 
@@ -16,24 +17,27 @@ class Database:
         return cls._instance
     
     def _initialize(self):
-        """Conecta a PostgreSQL en Supabase"""
         db_url = os.getenv('DATABASE_URL')
+        print(f"DEBUG: DATABASE_URL existe = {db_url is not None}")
         
         if db_url:
-            self.pg_conn = psycopg2.connect(db_url)
-            print("✅ PostgreSQL conectado")
+            try:
+                self.pg_conn = psycopg2.connect(db_url)
+                print("✅ PostgreSQL conectado exitosamente")
+            except Exception as e:
+                print(f"❌ ERROR conectando a PostgreSQL: {e}")
+                traceback.print_exc()
+                raise
         else:
-            print("❌ ERROR: DATABASE_URL no encontrada")
+            print("❌ ERROR: DATABASE_URL no encontrada en variables de entorno")
             raise Exception("DATABASE_URL no configurada")
     
     def get_cursor(self):
-        """Para queries SQL directas"""
         if not self.pg_conn:
             raise Exception("No hay conexion PostgreSQL")
         return self.pg_conn.cursor(cursor_factory=RealDictCursor)
     
     def execute_query(self, query, params=None):
-        """Ejecuta SQL directo"""
         if not self.pg_conn:
             return None
         try:
