@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import uuid
+import traceback
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -19,27 +20,53 @@ CORS(app)
 
 profanity.load_censor_words()
 
-PALABRAS_CLAVE = {
-    '¿Qué es la Física?': ['fisica', 'materia', 'energia', 'espacio', 'tiempo', 'metodo cientifico', 'mecanica', 'electromagnetismo', 'termodinamica', 'newton', 'ley', 'fenomeno'],
-    'MRU': ['velocidad', 'distancia', 'tiempo', 'uniforme', 'rectilineo', 'constante', 'm/s', 'km/h', 'trayectoria', 'ecuacion'],
-    'MRUA': ['aceleracion', 'velocidad', 'tiempo', 'desplazamiento', 'uniformemente', 'caida libre', 'gravedad', 'm/s2', 'ecuaciones'],
-    'Leyes de Newton': ['newton', 'inercia', 'fuerza', 'masa', 'aceleracion', 'accion', 'reaccion', 'f=ma', 'equilibrio'],
-    'Energía': ['cinetica', 'potencial', 'conservacion', 'trabajo', 'potencia', 'julios', 'vatios', 'mecanica', 'termica'],
-    'Vectores': ['vector', 'escalar', 'magnitud', 'direccion', 'componentes', 'suma', 'resultante', 'i', 'j', 'k']
-}
+# ============================================
+# SERVIR ARCHIVOS ESTATICOS (CSS, JS, HTML)
+# ============================================
+
+@app.route('/css/<path:filename>')
+def serve_css(filename):
+    return send_from_directory('css', filename)
+
+@app.route('/js/<path:filename>')
+def serve_js(filename):
+    return send_from_directory('js', filename)
 
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
 
 @app.route('/<path:filename>')
-def serve_file(filename):
+def serve_html(filename):
+    if filename.endswith('.html'):
+        return send_from_directory('.', filename)
     return send_from_directory('.', filename)
+
+# ============================================
+# PALABRAS CLAVE PARA FLASHCARDS
+# ============================================
+
+PALABRAS_CLAVE = {
+    '¿Qué es la Física?': ['fisica', 'materia', 'energia', 'espacio', 'tiempo', 'metodo cientifico'],
+    'MRU': ['velocidad', 'distancia', 'tiempo', 'uniforme', 'rectilineo', 'constante'],
+    'MRUA': ['aceleracion', 'velocidad', 'tiempo', 'desplazamiento', 'caida libre'],
+    'Leyes de Newton': ['newton', 'inercia', 'fuerza', 'masa', 'aceleracion'],
+    'Energía': ['cinetica', 'potencial', 'conservacion', 'trabajo', 'potencia'],
+    'Vectores': ['vector', 'escalar', 'magnitud', 'direccion', 'componentes']
+}
+
+# ============================================
+# FUNCION AYUDANTE
+# ============================================
 
 def get_db():
     if Database:
         return Database()
     return None
+
+# ============================================
+# API - REGISTRO
+# ============================================
 
 @app.route('/api/registro', methods=['POST'])
 def registro():
@@ -51,7 +78,7 @@ def registro():
     if not nombre or not email or not password:
         return jsonify({'success': False, 'message': 'Todos los campos son obligatorios'}), 400
     if len(password) < 6:
-        return jsonify({'success': False, 'message': 'La contraseña debe tener al menos 6 caracteres'}), 400
+        return jsonify({'success': False, 'message': 'Minimo 6 caracteres'}), 400
     
     db = get_db()
     if not db:
@@ -61,7 +88,7 @@ def registro():
         cursor = db.get_cursor()
         cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
         if cursor.fetchone():
-            return jsonify({'success': False, 'message': 'Este correo ya esta registrado'}), 400
+            return jsonify({'success': False, 'message': 'Correo ya registrado'}), 400
         
         hashed = generate_password_hash(password)
         user_id = str(uuid.uuid4())
@@ -73,8 +100,13 @@ def registro():
         cursor.close()
         return jsonify({'success': True, 'usuario_id': user_id})
     except Exception as e:
-        print(f"Error registro: {e}")
+        print(f"ERROR REGISTRO: {e}")
+        traceback.print_exc()
         return jsonify({'success': False, 'message': 'Error al registrar'}), 500
+
+# ============================================
+# API - LOGIN
+# ============================================
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -83,7 +115,7 @@ def login():
     password = data.get('password', '')
     
     if not email or not password:
-        return jsonify({'success': False, 'message': 'Email y contraseña obligatorios'}), 400
+        return jsonify({'success': False, 'message': 'Datos incompletos'}), 400
     
     db = get_db()
     if not db:
@@ -96,17 +128,23 @@ def login():
         cursor.close()
         
         if not user or not check_password_hash(user['password_hash'], password):
-            return jsonify({'success': False, 'message': 'Email o contraseña incorrectos'}), 401
+            return jsonify({'success': False, 'message': 'Credenciales incorrectas'}), 401
         
         return jsonify({'success': True, 'usuario_id': str(user['id']), 'nombre': user['nombre']})
     except Exception as e:
-        print(f"Error login: {e}")
+        print(f"ERROR LOGIN: {e}")
+        traceback.print_exc()
         return jsonify({'success': False, 'message': 'Error al iniciar sesion'}), 500
+
+# ============================================
+# API - TEMAS (ESTA ES LA QUE FALLA)
+# ============================================
 
 @app.route('/api/temas', methods=['GET'])
 def obtener_temas():
     db = get_db()
     if not db:
+        print("ERROR: No se pudo conectar a la base de datos")
         return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
@@ -114,10 +152,16 @@ def obtener_temas():
         cursor.execute("SELECT id, nombre, orden, descripcion FROM temas ORDER BY orden")
         temas = cursor.fetchall()
         cursor.close()
+        print(f"DEBUG: Se encontraron {len(temas)} temas")
         return jsonify({'success': True, 'temas': temas})
     except Exception as e:
-        print(f"Error temas: {e}")
-        return jsonify({'success': False, 'message': 'Error al cargar temas'}), 500
+        print(f"ERROR TEMAS: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+# ============================================
+# API - SUBTEMAS
+# ============================================
 
 @app.route('/api/temas/<int:tema_id>/subtemas', methods=['GET'])
 def obtener_subtemas(tema_id):
@@ -135,8 +179,13 @@ def obtener_subtemas(tema_id):
         cursor.close()
         return jsonify({'success': True, 'subtemas': subtemas})
     except Exception as e:
-        print(f"Error subtemas: {e}")
-        return jsonify({'success': False, 'message': 'Error al cargar subtemas'}), 500
+        print(f"ERROR SUBTEMAS: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+# ============================================
+# API - CONTENIDO
+# ============================================
 
 @app.route('/api/contenido/<int:subtema_id>', methods=['GET'])
 def obtener_contenido(subtema_id):
@@ -146,7 +195,6 @@ def obtener_contenido(subtema_id):
     
     try:
         cursor = db.get_cursor()
-        
         cursor.execute("SELECT id, tema_id, nombre, orden, contenido_html FROM subtemas WHERE id = %s", (subtema_id,))
         subtema = cursor.fetchone()
         
@@ -175,25 +223,13 @@ def obtener_contenido(subtema_id):
             'leido': leido
         })
     except Exception as e:
-        print(f"Error contenido: {e}")
-        return jsonify({'success': False, 'message': 'Error al cargar contenido'}), 500
+        print(f"ERROR CONTENIDO: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
-def validar_flashcard(pregunta, respuesta, tema_nombre):
-    texto_completo = f"{pregunta} {respuesta}".lower()
-    
-    if profanity.contains_profanity(pregunta) or profanity.contains_profanity(respuesta):
-        return {'valido': False, 'mensaje': 'La flashcard contiene lenguaje inapropiado'}
-    
-    if len(pregunta) < 10 or len(respuesta) < 10:
-        return {'valido': False, 'mensaje': 'La pregunta y respuesta deben tener al menos 10 caracteres'}
-    
-    palabras_clave = PALABRAS_CLAVE.get(tema_nombre, [])
-    if palabras_clave:
-        tiene_palabra_clave = any(palabra in texto_completo for palabra in palabras_clave)
-        if not tiene_palabra_clave:
-            return {'valido': False, 'mensaje': f'La flashcard no parece relacionada con el tema. Debe incluir conceptos como: {", ".join(palabras_clave[:5])}'}
-    
-    return {'valido': True, 'mensaje': 'Flashcard valida'}
+# ============================================
+# API - FLASHCARDS
+# ============================================
 
 @app.route('/api/flashcards/<int:subtema_id>', methods=['GET'])
 def obtener_flashcards(subtema_id):
@@ -203,10 +239,8 @@ def obtener_flashcards(subtema_id):
     
     try:
         cursor = db.get_cursor()
-        
         cursor.execute("SELECT nombre FROM subtemas WHERE id = %s", (subtema_id,))
         tema_info = cursor.fetchone()
-        tema_nombre = tema_info['nombre'] if tema_info else ''
         
         cursor.execute("""
             SELECT f.*, u.nombre as creador_nombre 
@@ -221,12 +255,13 @@ def obtener_flashcards(subtema_id):
         return jsonify({
             'success': True,
             'flashcards': flashcards,
-            'tema_nombre': tema_nombre,
+            'tema_nombre': tema_info['nombre'] if tema_info else '',
             'total': len(flashcards)
         })
     except Exception as e:
-        print(f"Error flashcards: {e}")
-        return jsonify({'success': False, 'message': 'Error al cargar flashcards'}), 500
+        print(f"ERROR FLASHCARDS: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 @app.route('/api/flashcards/crear', methods=['POST'])
 def crear_flashcard():
@@ -237,7 +272,7 @@ def crear_flashcard():
     usuario_id = data.get('usuario_id')
     
     if not subtema_id or not pregunta or not respuesta:
-        return jsonify({'success': False, 'message': 'Todos los campos son obligatorios'}), 400
+        return jsonify({'success': False, 'message': 'Datos incompletos'}), 400
     
     db = get_db()
     if not db:
@@ -245,20 +280,6 @@ def crear_flashcard():
     
     try:
         cursor = db.get_cursor()
-        
-        cursor.execute("SELECT nombre FROM subtemas WHERE id = %s", (subtema_id,))
-        tema_info = cursor.fetchone()
-        if not tema_info:
-            cursor.close()
-            return jsonify({'success': False, 'message': 'Subtema no encontrado'}), 404
-        
-        tema_nombre = tema_info['nombre']
-        
-        validacion = validar_flashcard(pregunta, respuesta, tema_nombre)
-        if not validacion['valido']:
-            cursor.close()
-            return jsonify({'success': False, 'message': validacion['mensaje']}), 400
-        
         es_oficial = not usuario_id
         
         cursor.execute("""
@@ -268,153 +289,42 @@ def crear_flashcard():
         
         db.pg_conn.commit()
         cursor.close()
-        
-        return jsonify({
-            'success': True,
-            'message': 'Flashcard creada correctamente' + (' (pendiente de aprobacion)' if not es_oficial else ''),
-            'flashcard_id': True
-        })
-        
+        return jsonify({'success': True, 'message': 'Flashcard creada'})
     except Exception as e:
-        print(f"Error crear flashcard: {e}")
-        return jsonify({'success': False, 'message': 'Error al crear flashcard'}), 500
+        print(f"ERROR CREAR FLASHCARD: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': 'Error al crear'}), 500
 
-@app.route('/api/flashcards/estudiar', methods=['POST'])
-def registrar_estudio():
-    data = request.get_json()
-    usuario_id = data.get('usuario_id')
-    flashcard_id = data.get('flashcard_id')
-    la_sabe = data.get('la_sabe', False)
-    
-    if not usuario_id or not flashcard_id:
-        return jsonify({'success': False, 'message': 'Datos incompletos'}), 400
-    
-    db = get_db()
-    if not db:
-        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
-    
-    try:
-        cursor = db.get_cursor()
-        
-        cursor.execute("""
-            INSERT INTO flashcards_estudio (usuario_id, flashcard_id, la_sabe)
-            VALUES (%s::uuid, %s, %s)
-            ON CONFLICT (usuario_id, flashcard_id) 
-            DO UPDATE SET la_sabe = %s, fecha_estudio = CURRENT_TIMESTAMP
-        """, (usuario_id, flashcard_id, la_sabe, la_sabe))
-        
-        db.pg_conn.commit()
-        cursor.close()
-        
-        return jsonify({'success': True, 'message': 'Progreso guardado'})
-    except Exception as e:
-        print(f"Error estudio: {e}")
-        return jsonify({'success': False, 'message': 'Error al guardar progreso'}), 500
-
-@app.route('/api/flashcards/progreso/<int:subtema_id>', methods=['GET'])
-def obtener_progreso_flashcards(subtema_id):
-    usuario_id = request.args.get('usuario_id')
-    
-    if not usuario_id:
-        return jsonify({'success': False, 'message': 'Usuario no identificado'}), 401
-    
-    db = get_db()
-    if not db:
-        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
-    
-    try:
-        cursor = db.get_cursor()
-        
-        cursor.execute("""
-            SELECT COUNT(*) as total FROM flashcards 
-            WHERE subtema_id = %s AND estado = 'aprobada'
-        """, (subtema_id,))
-        total = cursor.fetchone()['total']
-        
-        cursor.execute("""
-            SELECT COUNT(*) as estudiadas FROM flashcards_estudio fe
-            JOIN flashcards f ON fe.flashcard_id = f.id
-            WHERE f.subtema_id = %s AND fe.usuario_id = %s::uuid
-        """, (subtema_id, usuario_id))
-        estudiadas = cursor.fetchone()['estudiadas']
-        
-        cursor.execute("""
-            SELECT COUNT(*) as sabe FROM flashcards_estudio fe
-            JOIN flashcards f ON fe.flashcard_id = f.id
-            WHERE f.subtema_id = %s AND fe.usuario_id = %s::uuid AND fe.la_sabe = TRUE
-        """, (subtema_id, usuario_id))
-        sabe = cursor.fetchone()['sabe']
-        
-        cursor.close()
-        
-        porcentaje = round((estudiadas / total * 100), 1) if total > 0 else 0
-        puede_hacer_examen = porcentaje >= 70
-        
-        return jsonify({
-            'success': True,
-            'total': total,
-            'estudiadas': estudiadas,
-            'sabe': sabe,
-            'porcentaje': porcentaje,
-            'puede_hacer_examen': puede_hacer_examen
-        })
-        
-    except Exception as e:
-        print(f"Error progreso: {e}")
-        return jsonify({'success': False, 'message': 'Error al obtener progreso'}), 500
+# ============================================
+# API - EXAMENES
+# ============================================
 
 @app.route('/api/examen/<int:subtema_id>', methods=['GET'])
 def obtener_examen(subtema_id):
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexion con base de datos'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
-        
-        cursor.execute("SELECT COUNT(*) as total FROM examenes WHERE subtema_id = %s", (subtema_id,))
-        count = cursor.fetchone()['total']
-        print(f"DEBUG: Encontradas {count} preguntas para subtema {subtema_id}")
-        
-        if count == 0:
-            cursor.close()
-            return jsonify({
-                'success': True,
-                'preguntas': [],
-                'total': 0,
-                'message': 'No hay preguntas para este subtema'
-            })
-        
-        cursor.execute("""
-            SELECT id, subtema_id, pregunta, tipo, opciones, correcta, nivel 
-            FROM examenes 
-            WHERE subtema_id = %s 
-            ORDER BY RANDOM()
-        """, (subtema_id,))
+        cursor.execute("SELECT id, subtema_id, pregunta, tipo, opciones, correcta, nivel FROM examenes WHERE subtema_id = %s ORDER BY RANDOM()", (subtema_id,))
         preguntas = cursor.fetchall()
         
         for p in preguntas:
             if p['opciones']:
                 try:
                     p['opciones'] = json.loads(p['opciones'])
-                except json.JSONDecodeError as je:
-                    print(f"ERROR parseando JSON en pregunta {p['id']}: {je}")
+                except:
                     p['opciones'] = []
             else:
                 p['opciones'] = None
         
         cursor.close()
-        
-        return jsonify({
-            'success': True,
-            'preguntas': preguntas,
-            'total': len(preguntas)
-        })
+        return jsonify({'success': True, 'preguntas': preguntas, 'total': len(preguntas)})
     except Exception as e:
-        print(f"ERROR EXAMEN: {type(e).__name__}: {str(e)}")
-        import traceback
+        print(f"ERROR EXAMEN: {e}")
         traceback.print_exc()
-        return jsonify({'success': False, 'message': f'Error interno: {str(e)}'}), 500
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 @app.route('/api/examen/guardar-resultado', methods=['POST'])
 def guardar_resultado():
@@ -441,47 +351,15 @@ def guardar_resultado():
         """, (usuario_id, subtema_id, aciertos, total, porcentaje))
         db.pg_conn.commit()
         cursor.close()
-        
-        return jsonify({
-            'success': True,
-            'message': 'Resultado guardado',
-            'porcentaje': round(porcentaje, 2)
-        })
+        return jsonify({'success': True, 'porcentaje': round(porcentaje, 2)})
     except Exception as e:
-        print(f"Error guardar resultado: {e}")
+        print(f"ERROR GUARDAR RESULTADO: {e}")
+        traceback.print_exc()
         return jsonify({'success': False, 'message': 'Error al guardar'}), 500
 
-@app.route('/api/examen/resultados/<int:subtema_id>', methods=['GET'])
-def obtener_resultados(subtema_id):
-    usuario_id = request.args.get('usuario_id')
-    
-    if not usuario_id:
-        return jsonify({'success': False, 'message': 'Usuario no identificado'}), 401
-    
-    db = get_db()
-    if not db:
-        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
-    
-    try:
-        cursor = db.get_cursor()
-        cursor.execute("""
-            SELECT aciertos, total, porcentaje, fecha 
-            FROM resultados_examenes 
-            WHERE usuario_id = %s::uuid AND subtema_id = %s
-            ORDER BY porcentaje DESC 
-            LIMIT 1
-        """, (usuario_id, subtema_id))
-        resultado = cursor.fetchone()
-        cursor.close()
-        
-        return jsonify({
-            'success': True,
-            'tiene_resultado': resultado is not None,
-            'resultado': resultado
-        })
-    except Exception as e:
-        print(f"Error resultados: {e}")
-        return jsonify({'success': False, 'message': 'Error al obtener resultados'}), 500
+# ============================================
+# API - PROGRESO
+# ============================================
 
 @app.route('/api/progreso/<int:subtema_id>/marcar-leido', methods=['POST'])
 def marcar_leido(subtema_id):
@@ -497,7 +375,6 @@ def marcar_leido(subtema_id):
     
     try:
         cursor = db.get_cursor()
-        
         cursor.execute(
             "SELECT id FROM progreso WHERE usuario_id = %s::uuid AND subtema_id = %s",
             (usuario_id, subtema_id)
@@ -517,17 +394,20 @@ def marcar_leido(subtema_id):
         
         db.pg_conn.commit()
         cursor.close()
-        return jsonify({'success': True, 'message': 'Marcado como leido'})
-        
+        return jsonify({'success': True})
     except Exception as e:
-        print(f"Error progreso: {e}")
+        print(f"ERROR PROGRESO: {e}")
+        traceback.print_exc()
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/api/progreso/general', methods=['GET'])
 def progreso_general():
     return jsonify({'temas_leidos': 0, 'total_temas': 0, 'porcentaje': 0, 'detalle': []})
 
+# ============================================
+# INICIAR SERVIDOR
+# ============================================
+
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
