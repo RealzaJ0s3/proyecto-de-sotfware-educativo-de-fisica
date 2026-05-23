@@ -1,52 +1,61 @@
-import mysql.connector
-from mysql.connector import Error
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Database:
     _instance = None
+    pg_conn = None
     
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(Database, cls).__new__(cls)
-            cls._instance._initialize_connection()
+            cls._instance._initialize()
         return cls._instance
     
-    def _initialize_connection(self):
-        """Conecta a MariaDB (XAMPP)"""
-        try:
-            self.connection = mysql.connector.connect(
-                host='localhost',
-                port=3306,
-                database='fisica_cbit',
-                user='root',
-                password='',
-                autocommit=True
-            )
-            self.cursor = self.connection.cursor(dictionary=True)
-            print("✅ Conectado a MariaDB")
-        except Error as e:
-            print(f"❌ Error: {e}")
-            raise
+    def _initialize(self):
+        """Conecta a PostgreSQL en Supabase"""
+        db_url = os.getenv('DATABASE_URL')
+        
+        if db_url:
+            self.pg_conn = psycopg2.connect(db_url)
+            print("✅ PostgreSQL conectado")
+        else:
+            print("❌ ERROR: DATABASE_URL no encontrada")
+            raise Exception("DATABASE_URL no configurada")
     
     def get_cursor(self):
-        return self.cursor
+        """Para queries SQL directas"""
+        if not self.pg_conn:
+            raise Exception("No hay conexion PostgreSQL")
+        return self.pg_conn.cursor(cursor_factory=RealDictCursor)
     
     def execute_query(self, query, params=None):
+        """Ejecuta SQL directo"""
+        if not self.pg_conn:
+            return None
         try:
+            cursor = self.pg_conn.cursor(cursor_factory=RealDictCursor)
             if params:
-                self.cursor.execute(query, params)
+                cursor.execute(query, params)
             else:
-                self.cursor.execute(query)
+                cursor.execute(query)
             
             if query.strip().upper().startswith('SELECT'):
-                return self.cursor.fetchall()
+                result = cursor.fetchall()
             else:
-                self.connection.commit()
-                return self.cursor.lastrowid
-        except Error as e:
+                self.pg_conn.commit()
+                result = True
+            
+            cursor.close()
+            return result
+        except Exception as e:
             print(f"Error en query: {e}")
+            self.pg_conn.rollback()
             return None
     
     def close(self):
-        if self.connection.is_connected():
-            self.cursor.close()
-            self.connection.close()
+        if self.pg_conn:
+            self.pg_conn.close()
