@@ -5,6 +5,7 @@ from better_profanity import profanity
 import os
 import sys
 import json
+import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -19,41 +20,21 @@ CORS(app)
 profanity.load_censor_words()
 
 PALABRAS_CLAVE = {
-    '¿Qué es la Física?': ['física', 'materia', 'energía', 'espacio', 'tiempo', 'método científico', 'mecánica', 'electromagnetismo', 'termodinámica', 'newton', 'ley', 'fenómeno'],
-    'MRU': ['velocidad', 'distancia', 'tiempo', 'uniforme', 'rectilíneo', 'constante', 'm/s', 'km/h', 'trayectoria', 'ecuación'],
-    'MRUA': ['aceleración', 'velocidad', 'tiempo', 'desplazamiento', 'uniformemente', 'caída libre', 'gravedad', 'm/s²', 'ecuaciones'],
-    'Leyes de Newton': ['newton', 'inercia', 'fuerza', 'masa', 'aceleración', 'acción', 'reacción', 'f=ma', 'equilibrio'],
-    'Energía': ['cinética', 'potencial', 'conservación', 'trabajo', 'potencia', 'julios', 'vatios', 'mecánica', 'térmica'],
-    'Vectores': ['vector', 'escalar', 'magnitud', 'dirección', 'componentes', 'suma', 'resultante', 'i', 'j', 'k']
+    '¿Qué es la Física?': ['fisica', 'materia', 'energia', 'espacio', 'tiempo', 'metodo cientifico', 'mecanica', 'electromagnetismo', 'termodinamica', 'newton', 'ley', 'fenomeno'],
+    'MRU': ['velocidad', 'distancia', 'tiempo', 'uniforme', 'rectilineo', 'constante', 'm/s', 'km/h', 'trayectoria', 'ecuacion'],
+    'MRUA': ['aceleracion', 'velocidad', 'tiempo', 'desplazamiento', 'uniformemente', 'caida libre', 'gravedad', 'm/s2', 'ecuaciones'],
+    'Leyes de Newton': ['newton', 'inercia', 'fuerza', 'masa', 'aceleracion', 'accion', 'reaccion', 'f=ma', 'equilibrio'],
+    'Energía': ['cinetica', 'potencial', 'conservacion', 'trabajo', 'potencia', 'julios', 'vatios', 'mecanica', 'termica'],
+    'Vectores': ['vector', 'escalar', 'magnitud', 'direccion', 'componentes', 'suma', 'resultante', 'i', 'j', 'k']
 }
 
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
 
-@app.route('/login.html')
-def login_page():
-    return send_from_directory('.', 'login.html')
-
-@app.route('/contenido.html')
-def contenido_page():
-    return send_from_directory('.', 'contenido.html')
-
-@app.route('/flashcards.html')
-def flashcards_page():
-    return send_from_directory('.', 'flashcards.html')
-
-@app.route('/examen.html')
-def examen_page():
-    return send_from_directory('.', 'examen.html')
-
-@app.route('/css/<path:filename>')
-def serve_css(filename):
-    return send_from_directory('css', filename)
-
-@app.route('/js/<path:filename>')
-def serve_js(filename):
-    return send_from_directory('js', filename)
+@app.route('/<path:filename>')
+def serve_file(filename):
+    return send_from_directory('.', filename)
 
 def get_db():
     if Database:
@@ -74,19 +55,23 @@ def registro():
     
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
         cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
         if cursor.fetchone():
-            return jsonify({'success': False, 'message': 'Este correo ya está registrado'}), 400
+            return jsonify({'success': False, 'message': 'Este correo ya esta registrado'}), 400
         
         hashed = generate_password_hash(password)
-        cursor.execute("INSERT INTO usuarios (nombre, email, password) VALUES (%s, %s, %s)",
-                      (nombre, email, hashed))
-        db.connection.commit()
-        return jsonify({'success': True, 'usuario_id': cursor.lastrowid})
+        user_id = str(uuid.uuid4())
+        cursor.execute(
+            "INSERT INTO usuarios (id, nombre, email, password_hash) VALUES (%s, %s, %s, %s)",
+            (user_id, nombre, email, hashed)
+        )
+        db.pg_conn.commit()
+        cursor.close()
+        return jsonify({'success': True, 'usuario_id': user_id})
     except Exception as e:
         print(f"Error registro: {e}")
         return jsonify({'success': False, 'message': 'Error al registrar'}), 500
@@ -102,46 +87,52 @@ def login():
     
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
-        cursor.execute("SELECT id, nombre, password FROM usuarios WHERE email = %s", (email,))
+        cursor.execute("SELECT id, nombre, password_hash FROM usuarios WHERE email = %s", (email,))
         user = cursor.fetchone()
+        cursor.close()
         
-        if not user or not check_password_hash(user['password'], password):
+        if not user or not check_password_hash(user['password_hash'], password):
             return jsonify({'success': False, 'message': 'Email o contraseña incorrectos'}), 401
         
-        return jsonify({'success': True, 'usuario_id': user['id'], 'nombre': user['nombre']})
+        return jsonify({'success': True, 'usuario_id': str(user['id']), 'nombre': user['nombre']})
     except Exception as e:
         print(f"Error login: {e}")
-        return jsonify({'success': False, 'message': 'Error al iniciar sesión'}), 500
+        return jsonify({'success': False, 'message': 'Error al iniciar sesion'}), 500
 
 @app.route('/api/temas', methods=['GET'])
 def obtener_temas():
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
-        cursor.execute("SELECT DISTINCT tema, orden_tema FROM subtemas ORDER BY orden_tema")
+        cursor.execute("SELECT id, nombre, orden, descripcion FROM temas ORDER BY orden")
         temas = cursor.fetchall()
+        cursor.close()
         return jsonify({'success': True, 'temas': temas})
     except Exception as e:
         print(f"Error temas: {e}")
         return jsonify({'success': False, 'message': 'Error al cargar temas'}), 500
 
-@app.route('/api/temas/<tema>/subtemas', methods=['GET'])
-def obtener_subtemas(tema):
+@app.route('/api/temas/<int:tema_id>/subtemas', methods=['GET'])
+def obtener_subtemas(tema_id):
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
-        cursor.execute("SELECT id, subtema, orden_subtema FROM subtemas WHERE tema = %s ORDER BY orden_subtema", (tema,))
+        cursor.execute(
+            "SELECT id, tema_id, nombre, orden, contenido_html FROM subtemas WHERE tema_id = %s ORDER BY orden",
+            (tema_id,)
+        )
         subtemas = cursor.fetchall()
+        cursor.close()
         return jsonify({'success': True, 'subtemas': subtemas})
     except Exception as e:
         print(f"Error subtemas: {e}")
@@ -151,42 +142,36 @@ def obtener_subtemas(tema):
 def obtener_contenido(subtema_id):
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
         
-        cursor.execute("SELECT s.*, s.tema as tema_nombre FROM subtemas s WHERE s.id = %s", (subtema_id,))
+        cursor.execute("SELECT id, tema_id, nombre, orden, contenido_html FROM subtemas WHERE id = %s", (subtema_id,))
         subtema = cursor.fetchone()
-        
-        cursor.execute("SELECT titulo, contenido_html FROM contenidos WHERE subtema_id = %s", (subtema_id,))
-        contenido = cursor.fetchone()
         
         usuario_id = request.args.get('usuario_id')
         leido = False
         if usuario_id:
             cursor.execute(
-                "SELECT leido FROM progreso WHERE usuario_id = %s AND tema_id = %s",
-                (int(usuario_id), subtema_id)
+                "SELECT leido FROM progreso WHERE usuario_id = %s::uuid AND subtema_id = %s",
+                (usuario_id, subtema_id)
             )
             prog = cursor.fetchone()
             leido = prog['leido'] if prog else False
         
-        if not contenido:
-            return jsonify({
-                'success': True,
-                'subtema': subtema,
-                'contenido': {
-                    'titulo': subtema['subtema'],
-                    'contenido_html': '<p>Contenido en construcción...</p>'
-                },
-                'leido': leido
-            })
+        cursor.close()
+        
+        if not subtema:
+            return jsonify({'success': False, 'message': 'Subtema no encontrado'}), 404
         
         return jsonify({
             'success': True,
             'subtema': subtema,
-            'contenido': contenido,
+            'contenido': {
+                'titulo': subtema['nombre'],
+                'contenido_html': subtema['contenido_html'] or '<p>Contenido en construccion...</p>'
+            },
             'leido': leido
         })
     except Exception as e:
@@ -208,29 +193,30 @@ def validar_flashcard(pregunta, respuesta, tema_nombre):
         if not tiene_palabra_clave:
             return {'valido': False, 'mensaje': f'La flashcard no parece relacionada con el tema. Debe incluir conceptos como: {", ".join(palabras_clave[:5])}'}
     
-    return {'valido': True, 'mensaje': 'Flashcard válida'}
+    return {'valido': True, 'mensaje': 'Flashcard valida'}
 
 @app.route('/api/flashcards/<int:subtema_id>', methods=['GET'])
 def obtener_flashcards(subtema_id):
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
         
-        cursor.execute("SELECT tema FROM subtemas WHERE id = %s", (subtema_id,))
+        cursor.execute("SELECT nombre FROM subtemas WHERE id = %s", (subtema_id,))
         tema_info = cursor.fetchone()
-        tema_nombre = tema_info['tema'] if tema_info else ''
+        tema_nombre = tema_info['nombre'] if tema_info else ''
         
         cursor.execute("""
             SELECT f.*, u.nombre as creador_nombre 
             FROM flashcards f 
             LEFT JOIN usuarios u ON f.creado_por = u.id
             WHERE f.subtema_id = %s AND f.estado = 'aprobada'
-            ORDER BY f.es_oficial DESC, f.fecha_creacion
+            ORDER BY f.es_oficial DESC, f.creado_en
         """, (subtema_id,))
         flashcards = cursor.fetchall()
+        cursor.close()
         
         return jsonify({
             'success': True,
@@ -255,35 +241,38 @@ def crear_flashcard():
     
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
         
-        cursor.execute("SELECT tema FROM subtemas WHERE id = %s", (subtema_id,))
+        cursor.execute("SELECT nombre FROM subtemas WHERE id = %s", (subtema_id,))
         tema_info = cursor.fetchone()
         if not tema_info:
+            cursor.close()
             return jsonify({'success': False, 'message': 'Subtema no encontrado'}), 404
         
-        tema_nombre = tema_info['tema']
+        tema_nombre = tema_info['nombre']
         
         validacion = validar_flashcard(pregunta, respuesta, tema_nombre)
         if not validacion['valido']:
+            cursor.close()
             return jsonify({'success': False, 'message': validacion['mensaje']}), 400
         
         es_oficial = not usuario_id
         
         cursor.execute("""
             INSERT INTO flashcards (subtema_id, pregunta, respuesta, es_oficial, creado_por, estado)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (subtema_id, pregunta, respuesta, es_oficial, usuario_id, 'aprobada' if es_oficial else 'pendiente'))
+            VALUES (%s, %s, %s, %s, %s::uuid, %s)
+        """, (subtema_id, pregunta, respuesta, es_oficial, usuario_id if usuario_id else None, 'aprobada' if es_oficial else 'pendiente'))
         
-        db.connection.commit()
+        db.pg_conn.commit()
+        cursor.close()
         
         return jsonify({
             'success': True,
-            'message': 'Flashcard creada correctamente' + (' (pendiente de aprobación)' if not es_oficial else ''),
-            'flashcard_id': cursor.lastrowid
+            'message': 'Flashcard creada correctamente' + (' (pendiente de aprobacion)' if not es_oficial else ''),
+            'flashcard_id': True
         })
         
     except Exception as e:
@@ -302,18 +291,20 @@ def registrar_estudio():
     
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
         
         cursor.execute("""
             INSERT INTO flashcards_estudio (usuario_id, flashcard_id, la_sabe)
-            VALUES (%s, %s, %s)
-            ON DUPLICATE KEY UPDATE la_sabe = %s, fecha_estudio = CURRENT_TIMESTAMP
-        """, (int(usuario_id), flashcard_id, la_sabe, la_sabe))
+            VALUES (%s::uuid, %s, %s)
+            ON CONFLICT (usuario_id, flashcard_id) 
+            DO UPDATE SET la_sabe = %s, fecha_estudio = CURRENT_TIMESTAMP
+        """, (usuario_id, flashcard_id, la_sabe, la_sabe))
         
-        db.connection.commit()
+        db.pg_conn.commit()
+        cursor.close()
         
         return jsonify({'success': True, 'message': 'Progreso guardado'})
     except Exception as e:
@@ -329,7 +320,7 @@ def obtener_progreso_flashcards(subtema_id):
     
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
@@ -343,16 +334,18 @@ def obtener_progreso_flashcards(subtema_id):
         cursor.execute("""
             SELECT COUNT(*) as estudiadas FROM flashcards_estudio fe
             JOIN flashcards f ON fe.flashcard_id = f.id
-            WHERE f.subtema_id = %s AND fe.usuario_id = %s
-        """, (subtema_id, int(usuario_id)))
+            WHERE f.subtema_id = %s AND fe.usuario_id = %s::uuid
+        """, (subtema_id, usuario_id))
         estudiadas = cursor.fetchone()['estudiadas']
         
         cursor.execute("""
             SELECT COUNT(*) as sabe FROM flashcards_estudio fe
             JOIN flashcards f ON fe.flashcard_id = f.id
-            WHERE f.subtema_id = %s AND fe.usuario_id = %s AND fe.la_sabe = TRUE
-        """, (subtema_id, int(usuario_id)))
+            WHERE f.subtema_id = %s AND fe.usuario_id = %s::uuid AND fe.la_sabe = TRUE
+        """, (subtema_id, usuario_id))
         sabe = cursor.fetchone()['sabe']
+        
+        cursor.close()
         
         porcentaje = round((estudiadas / total * 100), 1) if total > 0 else 0
         puede_hacer_examen = porcentaje >= 70
@@ -374,7 +367,7 @@ def obtener_progreso_flashcards(subtema_id):
 def obtener_examen(subtema_id):
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión con base de datos'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion con base de datos'}), 500
     
     try:
         cursor = db.get_cursor()
@@ -384,6 +377,7 @@ def obtener_examen(subtema_id):
         print(f"DEBUG: Encontradas {count} preguntas para subtema {subtema_id}")
         
         if count == 0:
+            cursor.close()
             return jsonify({
                 'success': True,
                 'preguntas': [],
@@ -392,10 +386,10 @@ def obtener_examen(subtema_id):
             })
         
         cursor.execute("""
-            SELECT id, pregunta, tipo, opciones, correcta 
+            SELECT id, subtema_id, pregunta, tipo, opciones, correcta, nivel 
             FROM examenes 
             WHERE subtema_id = %s 
-            ORDER BY RAND()
+            ORDER BY RANDOM()
         """, (subtema_id,))
         preguntas = cursor.fetchall()
         
@@ -408,6 +402,8 @@ def obtener_examen(subtema_id):
                     p['opciones'] = []
             else:
                 p['opciones'] = None
+        
+        cursor.close()
         
         return jsonify({
             'success': True,
@@ -435,15 +431,16 @@ def guardar_resultado():
     
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
         cursor.execute("""
             INSERT INTO resultados_examenes (usuario_id, subtema_id, aciertos, total, porcentaje)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (int(usuario_id), subtema_id, aciertos, total, porcentaje))
-        db.connection.commit()
+            VALUES (%s::uuid, %s, %s, %s, %s)
+        """, (usuario_id, subtema_id, aciertos, total, porcentaje))
+        db.pg_conn.commit()
+        cursor.close()
         
         return jsonify({
             'success': True,
@@ -463,18 +460,19 @@ def obtener_resultados(subtema_id):
     
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
         cursor.execute("""
             SELECT aciertos, total, porcentaje, fecha 
             FROM resultados_examenes 
-            WHERE usuario_id = %s AND subtema_id = %s
+            WHERE usuario_id = %s::uuid AND subtema_id = %s
             ORDER BY porcentaje DESC 
             LIMIT 1
-        """, (int(usuario_id), subtema_id))
+        """, (usuario_id, subtema_id))
         resultado = cursor.fetchone()
+        cursor.close()
         
         return jsonify({
             'success': True,
@@ -495,30 +493,31 @@ def marcar_leido(subtema_id):
     
     db = get_db()
     if not db:
-        return jsonify({'success': False, 'message': 'Error de conexión'}), 500
+        return jsonify({'success': False, 'message': 'Error de conexion'}), 500
     
     try:
         cursor = db.get_cursor()
         
         cursor.execute(
-            "SELECT id FROM progreso WHERE usuario_id = %s AND tema_id = %s",
-            (int(usuario_id), subtema_id)
+            "SELECT id FROM progreso WHERE usuario_id = %s::uuid AND subtema_id = %s",
+            (usuario_id, subtema_id)
         )
         existe = cursor.fetchone()
         
         if existe:
             cursor.execute(
-                "UPDATE progreso SET leido = TRUE, ultimo_acceso = CURRENT_TIMESTAMP WHERE usuario_id = %s AND tema_id = %s",
-                (int(usuario_id), subtema_id)
+                "UPDATE progreso SET leido = TRUE, ultimo_acceso = CURRENT_TIMESTAMP WHERE usuario_id = %s::uuid AND subtema_id = %s",
+                (usuario_id, subtema_id)
             )
         else:
             cursor.execute(
-                "INSERT INTO progreso (usuario_id, tema_id, leido) VALUES (%s, %s, TRUE)",
-                (int(usuario_id), subtema_id)
+                "INSERT INTO progreso (usuario_id, subtema_id, leido) VALUES (%s::uuid, %s, TRUE)",
+                (usuario_id, subtema_id)
             )
         
-        db.connection.commit()
-        return jsonify({'success': True, 'message': 'Marcado como leído'})
+        db.pg_conn.commit()
+        cursor.close()
+        return jsonify({'success': True, 'message': 'Marcado como leido'})
         
     except Exception as e:
         print(f"Error progreso: {e}")
@@ -529,4 +528,6 @@ def progreso_general():
     return jsonify({'temas_leidos': 0, 'total_temas': 0, 'porcentaje': 0, 'detalle': []})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
